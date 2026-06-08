@@ -2,7 +2,7 @@ const express=require('express');
 const cors=require('cors');
 const dotenv=require('dotenv');
 const app=express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 dotenv.config();
 
@@ -47,6 +47,20 @@ async function run() {
         }
     })
 
+    app.get('/ground/:id',async (req,res)=>{
+      try{
+        const id=req.params.id;
+        const grd=await ground.findOne({
+          _id:{$eq:(new ObjectId(id))}
+        })
+         res.status(200).json(grd);
+      }catch(e){
+          res.status(500).json({
+            success:false,
+            msg:e.message
+          })
+      }
+    })
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

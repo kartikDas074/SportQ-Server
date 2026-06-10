@@ -74,6 +74,22 @@ async function run() {
         });
       }
     });
+    
+    app.get("/Bookings/:userId",async(req,res)=>{
+      try{
+        const id=req.params.userId;
+        const bookings=await Bookings.find({
+           user_id:{$eq:id}
+        })
+        res.status(200).json(bookings);
+      }catch(e){
+         res.status(500).json({
+          success: false,
+          msg: e.message,
+        });
+      }
+    })
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",

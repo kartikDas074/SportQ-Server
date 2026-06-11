@@ -74,6 +74,22 @@ async function run() {
      }
     })
 
+    app.get('/ground/owner/:email',async(req,res)=>{
+      try{
+        const email=req.params.email;
+        console.log(email);
+        const result=await ground.find({
+          email:{$eq:email}
+        }).toArray();
+         res.status(200).json(result);
+      }catch (e) {
+        res.status(500).json({
+          success: false,
+          msg: e.message,
+        });
+      }
+    })
+
     app.post("/Bookings", async (req, res) => {
       try {
         const booking = req.body;

@@ -58,6 +58,22 @@ async function run() {
       }
     });
 
+    app.post('/ground',async(req,res)=>{
+     try{
+      const data=req.body;
+      const result=await ground.insertOne(data);
+      res.status(201).json({
+          success: true,
+          insertedId: result.insertedId,
+        });
+     }catch(e){
+         res.status(500).json({
+          success: false,
+          message: "Internal Server Error",
+        });
+     }
+    })
+
     app.post("/Bookings", async (req, res) => {
       try {
         const booking = req.body;
@@ -75,11 +91,11 @@ async function run() {
       }
     });
 
-    app.delete("/Bookings/ground/:id",async(req,res)=>{
+    app.delete("/Bookings/:id",async(req,res)=>{
          try{
           const id=req.params.id;
          const result=await Bookings.deleteOne({
-          ground_id:{$eq:id}
+          _id:{$eq:new ObjectId(id)}
          })
          return res.status(200).json(result)
          }catch(e){

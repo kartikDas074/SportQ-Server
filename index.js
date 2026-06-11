@@ -74,13 +74,43 @@ async function run() {
         });
       }
     });
+
+    app.delete("/Bookings/ground/:id",async(req,res)=>{
+         try{
+          const id=req.params.id;
+         const result=await Bookings.deleteOne({
+          ground_id:{$eq:id}
+         })
+         return res.status(200).json(result)
+         }catch(e){
+          res.status(500).json({
+            success: false,
+          msg: e.message,
+          })
+         }
+    })
     
-    app.get("/Bookings/:userId",async(req,res)=>{
+    app.get("/Bookings/user/:Id",async(req,res)=>{
       try{
-        const id=req.params.userId;
+        const id=req.params.Id;
         const bookings=await Bookings.find({
            user_id:{$eq:id}
-        })
+        }).toArray();
+        res.status(200).json(bookings);
+      }catch(e){
+         res.status(500).json({
+          success: false,
+          msg: e.message,
+        });
+      }
+    })
+
+    app.get("/Bookings/owner/:email",async(req,res)=>{
+      try{
+        const email=req.params.email;
+        const bookings=await Bookings.find({
+           owner_email:{$eq:email}
+        }).toArray();
         res.status(200).json(bookings);
       }catch(e){
          res.status(500).json({

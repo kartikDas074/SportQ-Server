@@ -90,6 +90,40 @@ async function run() {
       }
     })
 
+    app.delete('/ground/:id',async(req,res)=>{
+         try{
+          const id=req.params.id;
+         const result=await ground.deleteOne({
+          _id:{$eq:new ObjectId(id)}
+         })
+         return res.status(200).json(result)
+         }catch(e){
+          res.status(500).json({
+            success: false,
+          msg: e.message,
+          })
+         }
+    })
+
+    app.patch('/ground/:id',async(req,res)=>{
+      try{
+        const id=new ObjectId(req.params.id);
+        const data=req.body;
+        const result=await ground.updateOne({
+          _id:id
+        },{
+          $set:data
+        })
+       return res.status(200).json(result);
+      }catch(e){
+        return res.status(500).json({
+      success: false,
+      msg: e.message,
+    });
+      }
+
+    })
+
     app.post("/Bookings", async (req, res) => {
       try {
         const booking = req.body;

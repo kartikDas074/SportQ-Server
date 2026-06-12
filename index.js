@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 dotenv.config();
 
@@ -23,6 +24,27 @@ const client = new MongoClient(uri, {
   },
 });
 
+const JWKS=createRemoteJWKSet(
+  new URL('http://localhost:3000/api/auth/jwks')
+)
+
+const verfytoken= async (req,res,next)=>{
+  const authHeader=req?.headers.authorization;
+  if(!authHeader){
+    return res.status(401).json({message:"Unauthorized"})
+  }
+  const token=authHeader.split(" ")[1];
+  if(!token){
+    return res.status(401).json({message:"Unauthorized"})
+  }
+  
+  try{
+    const {payload}=await jwtVerify(token,JWKS);
+    next();
+  }catch(e){
+    return res.status(403).json({message:'ForBiden'})
+  }
+}
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -43,7 +65,7 @@ async function run() {
       }
     });
 
-    app.get("/ground/:id", async (req, res) => {
+    app.get("/ground/:id",verfytoken, async (req, res) => {
       try {
         const id = req.params.id;
         const grd = await ground.findOne({
@@ -58,7 +80,7 @@ async function run() {
       }
     });
 
-    app.post('/ground',async(req,res)=>{
+    app.post('/ground',verfytoken,async(req,res)=>{
      try{
       const data=req.body;
       const result=await ground.insertOne(data);
@@ -74,7 +96,7 @@ async function run() {
      }
     })
 
-    app.get('/ground/owner/:email',async(req,res)=>{
+    app.get('/ground/owner/:email',verfytoken,async(req,res)=>{
       try{
         const email=req.params.email;
         console.log(email);
@@ -90,7 +112,7 @@ async function run() {
       }
     })
 
-    app.delete('/ground/:id',async(req,res)=>{
+    app.delete('/ground/:id',verfytoken, async(req,res)=>{
          try{
           const id=req.params.id;
          const result=await ground.deleteOne({
@@ -105,7 +127,7 @@ async function run() {
          }
     })
 
-    app.patch('/ground/:id',async(req,res)=>{
+    app.patch('/ground/:id',verfytoken, async(req,res)=>{
       try{
         const id=new ObjectId(req.params.id);
         const data=req.body;
@@ -124,7 +146,7 @@ async function run() {
 
     })
 
-    app.post("/Bookings", async (req, res) => {
+    app.post("/Bookings",verfytoken, async (req, res) => {
       try {
         const booking = req.body;
         const result = await Bookings.insertOne(booking);
@@ -141,7 +163,7 @@ async function run() {
       }
     });
 
-    app.delete("/Bookings/:id",async(req,res)=>{
+    app.delete("/Bookings/:id",verfytoken,async(req,res)=>{
          try{
           const id=req.params.id;
          const result=await Bookings.deleteOne({
@@ -156,7 +178,7 @@ async function run() {
          }
     })
     
-    app.get("/Bookings/user/:Id",async(req,res)=>{
+    app.get("/Bookings/user/:Id",verfytoken, async(req,res)=>{
       try{
         const id=req.params.Id;
         const bookings=await Bookings.find({
@@ -171,13 +193,30 @@ async function run() {
       }
     })
 
-    app.get("/Bookings/owner/:email",async(req,res)=>{
+    app.get("/Bookings/owner/:email",verfytoken, async(req,res)=>{
       try{
         const email=req.params.email;
         const bookings=await Bookings.find({
            owner_email:{$eq:email}
         }).toArray();
         res.status(200).json(bookings);
+      }catch(e){
+         res.status(500).json({
+          success: false,
+          msg: e.message,
+        });
+      }
+    })
+    app.patch("/Bookings/owner/:id",verfytoken, async(req,res)=>{
+      try{
+        const id=req.params.id;
+        const data=req.body;
+        const updated=await Bookings.updateOne({
+            _id:new ObjectId(id)
+        },{
+          $set:data
+        })
+        res.status(200).json(updated);
       }catch(e){
          res.status(500).json({
           success: false,

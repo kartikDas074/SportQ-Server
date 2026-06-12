@@ -25,7 +25,7 @@ const client = new MongoClient(uri, {
 });
 
 const JWKS=createRemoteJWKSet(
-  new URL('http://localhost:3000/api/auth/jwks')
+  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
 )
 
 const verfytoken= async (req,res,next)=>{
@@ -48,7 +48,7 @@ const verfytoken= async (req,res,next)=>{
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    //await client.connect();
 
     const DB = client.db("SportQuest");
     const ground = DB.collection("SGround");
@@ -225,7 +225,7 @@ async function run() {
       }
     })
 
-    await client.db("admin").command({ ping: 1 });
+   // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
@@ -238,8 +238,9 @@ run().catch(console.dir);
 
 // Main Code
 app.get("/", (req, res) => {
-  res.send("the more you live the more you realise.. the world is fucked up");
+  res.send("Sport Q client Server Is Running");
 });
+
 app.listen(port, () => {
   console.log(`server run on|${port}`);
 });
